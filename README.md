@@ -22,6 +22,7 @@ AlaJ/source/
 │   ├── __init__.py
 │   ├── position_size.py    # 仓位控制
 │   ├── stop_loss.py        # 止损策略
+├── chart/                  # 图像展示
 ├── utils/                  # 辅助工具
 │   ├── __init__.py
 │   ├── config_loader.py    # 配置加载工具

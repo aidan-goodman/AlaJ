@@ -27,7 +27,7 @@ class MACalculator:
         :return: pandas DataFrame, 包含均线和收盘价的股票数据
         """
         df = df[["trade_date", "close"]]  # 确保只保留交易日期和收盘价
-        df["trade_date"] = pd.to_datetime(
+        df.loc[:, "trade_date"] = pd.to_datetime(
             df["trade_date"]
         )  # 将日期转换为 datetime 格式
         df = df.sort_values("trade_date")  # 按日期升序排列
