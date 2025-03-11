@@ -1,40 +1,44 @@
 import os
-import json
+import toml
 
 
 class ConfigLoader:
-    def __init__(self, config_path: str = ""):
+    def __init__(self, config_path: str = os.getcwd() + "/config/config.toml"):
         """
         初始化配置加载器。
 
-        :param config_path: JSON 配置文件路径，默认为 '/config/config.json'
+        :param config_path: TOML 配置文件路径，默认为 '/config/config.toml'
         """
-        if not config_path:
-            config_path = os.getcwd() + "/config/config.json"
         self.config_path = config_path
-        self.config = {}
-        self.load_config()
+        self.config = self.load_config()
 
-    def load_config(self):
+    def load_config(self) -> dict:
         """
-        加载 JSON 配置文件
+        加载 TOML 配置文件并返回扁平化的字典。
+
+        :return: 扁平化后的配置字典
         """
         try:
             with open(self.config_path, "r") as file:
-                self.config = json.load(file)
+                config = toml.load(file)
+                return self._flatten_dict(config)
         except FileNotFoundError:
-            print(f"Warning: Config file {self.config_path} not found.")
-        except json.JSONDecodeError as e:
-            print(f"Error: Failed to parse config file {self.config_path}: {e}")
-
-        self.config = self._flatten_dict(self.config)
+            print(
+                f"Warning: Config file {self.config_path} not found. Returning an empty config."
+            )
+            return {}
+        except toml.TomlDecodeError as e:
+            print(
+                f"Error: Failed to parse config file {self.config_path}: {e}. Returning an empty config."
+            )
+            return {}
 
     def _flatten_dict(self, d: dict, parent_key: str = "", sep: str = ".") -> dict:
         """
         将嵌套字典转换为扁平化字典，键使用分隔符连接。
 
         :param d: 需要扁平化的字典
-        :param parent_key: 父键前缀
+        :param parent_key: 父键前缀，默认为空字符串
         :param sep: 分隔符，默认为 '.'
         :return: 扁平化后的字典
         """
@@ -42,7 +46,7 @@ class ConfigLoader:
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
             if isinstance(v, dict):
-                items.update(self._flatten_dict(v, new_key, sep=sep))
+                items.update(self._flatten_dict(v, new_key, sep))
             else:
                 items[new_key] = v
         return items
@@ -55,7 +59,4 @@ class ConfigLoader:
         :param default: 如果配置项不存在，则返回的默认值
         :return: 配置项的值或默认值
         """
-        if isinstance(self.config, dict) and key in self.config:
-            return self.config[key]
-        else:
-            return default
+        return self.config.get(key, default)
